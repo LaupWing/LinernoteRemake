@@ -2,9 +2,9 @@ const socket = io()
 let url = null
 let prevState = []
 
-socket.on('sending artistinfo', (data)=>renderResults(data))
-socket.on('change artistpage', (obj)=>renderArtistPage(obj))
-socket.on('followers info', (list)=>renderFollowingList(list))
+// socket.on('sending artistinfo', (data)=>renderResults(data))
+// socket.on('change artistpage', (obj)=>renderArtistPage(obj))
+// socket.on('followers info', (list)=>renderFollowingList(list))
 
 function init(){
     activeNav()
@@ -18,6 +18,7 @@ function checkFollowingList(){
     const list = JSON.parse(localStorage.getItem('following'))
     if(list===null)    return
     socket.emit('list', list)
+    
     // let uri = 'http://localhost:3001/testing'
     // let formData = new FormData()
     // formData.append("testing",'test')
@@ -112,7 +113,7 @@ function getSearchResults(){
     deleteInput.addEventListener('click', function(){
         input.value = ''
     })
-    input.addEventListener('input', function(){
+    input.addEventListener('input', async ()=>{
         if(input.value.length === 0){
             const container = document.querySelector('section.search-main')
             document.querySelector('.input-container i').classList.remove('reveal')
@@ -122,8 +123,9 @@ function getSearchResults(){
             document.querySelector('.input-container i').classList.add('reveal')
         }
         if(input.value.length >3){
-            console.log("emitting search")
-            socket.emit('sending searchvalue', this.value)
+            const respond = await fetch(`http://185.57.8.62:3000/api/v1/artist?name=${input.value}`,{mode:'cors'})
+            const result  = await respond.json()
+            console.log(result)
         }
     })
 }
@@ -208,7 +210,6 @@ function artistTransition(obj){
         url(${obj.artistClean.image});
         background-size: cover;
     `
-    console.log(document.querySelector('.image-container'))
     document.querySelector('.image-container').style.background  = `
         background:pink
     `
@@ -253,6 +254,7 @@ function requestingPosts(){
                 }
                 
             })
+            
             instgrm.Embeds.process()
             soundCloudEmbeds()
         })
